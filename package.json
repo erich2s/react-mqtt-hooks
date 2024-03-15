@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
+    "prepublishOnly": "pnpm build",
     "format": "prettier --write .",
     "lint": "eslint . --ext .ts,.tsx --fix"
   },

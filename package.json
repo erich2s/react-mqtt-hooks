@@ -1,6 +1,6 @@
 {
   "name": "react-mqtt-hooks",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "React Hooks for MQTT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -23,6 +23,7 @@
   "repository": {
     "url": "https://github.com/erich2s/react-mqtt-hooks"
   },
+  "homepage": "https://github.com/erich2s/react-mqtt-hooks",
   "author": "Eric Huang",
   "license": "MIT",
   "dependencies": {

@@ -1,8 +1,8 @@
 "use client";
-import { useMqttContext, useTopic } from "react-mqtt-hooks";
+import { useMqttConnector, useTopic } from "react-mqtt-hooks";
 
 export default function Page() {
-  const { status } = useMqttContext();
+  const { status } = useMqttConnector();
   return (
     <div className="flex flex-col items-center">
       <h1 className="font-bold">Mqtt status: {status}</h1>

@@ -1,10 +1,14 @@
 import { useSyncExternalStore } from "react";
 import { globalState } from "../core/global-state";
 import { type MqttClient } from "mqtt";
-import { useMqttContext } from "./use-mqtt-context";
+import { useMqttConnector } from "./use-mqtt-connector";
 
 export function useTopic(topic: string) {
-  const { client } = useMqttContext();
+  const ctx = useMqttConnector();
+  if (!ctx) {
+    throw new Error("useMqttConnector must be used within a MqttConnector");
+  }
+  const { client } = ctx;
   const message = useSyncExternalStore<Buffer | null>(
     (cb) => subscribeToTopic(client, topic, cb),
     () => getSanpshotForTopic(topic),

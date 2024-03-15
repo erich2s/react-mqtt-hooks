@@ -11,7 +11,17 @@
     "format": "prettier --write .",
     "lint": "eslint . --ext .ts,.tsx --fix"
   },
-  "keywords": [],
+  "keywords": [
+    "mqtt",
+    "react",
+    "hooks",
+    "iot",
+    "esp",
+    "stm32"
+  ],
+  "repository": {
+    "url": ""
+  },
   "author": "Eric Huang",
   "license": "MIT",
   "dependencies": {

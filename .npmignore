@@ -1,0 +1,11 @@
+src
+examples
+node_modules
+
+.DS_Store
+.eslintrc.js
+.eslintignore
+.prettierrc
+.prettierignore
+tsconfig.json
+tsup.config.ts

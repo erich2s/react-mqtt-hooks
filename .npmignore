@@ -9,3 +9,4 @@ node_modules
 .prettierignore
 tsconfig.json
 tsup.config.ts
+pnpm-workspace.yaml

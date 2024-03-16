@@ -1,6 +1,6 @@
 {
   "name": "react-mqtt-hooks",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "React Hooks for MQTT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

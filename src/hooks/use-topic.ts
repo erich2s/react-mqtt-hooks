@@ -6,7 +6,7 @@ import { useMqttConnector } from "./use-mqtt-connector";
 export function useTopic(topic: string) {
   const ctx = useMqttConnector();
   if (!ctx) {
-    throw new Error("useMqttConnector must be used within a MqttConnector");
+    throw new Error("useTopic must be used within a MqttConnector");
   }
   const { client } = ctx;
   const message = useSyncExternalStore<Buffer | null>(

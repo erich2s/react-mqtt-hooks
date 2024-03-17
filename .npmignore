@@ -10,3 +10,7 @@ node_modules
 tsconfig.json
 tsup.config.ts
 pnpm-workspace.yaml
+
+.github
+.vscode
+.changeset

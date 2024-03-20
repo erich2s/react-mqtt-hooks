@@ -115,7 +115,8 @@ function MyComponent() {
 
 ### `useTopic`
 
-_This hook currently not support multiple topics and wildcard subscriptions yet._
+>[!WARNING]
+> This hook currently not support multiple topics and wildcard subscriptions yet.
 
 The `useTopic` hook is used to subscribe to a specific topic and receive messages from the broker. It returns the last message **buffer** received from the broker. You can convert it to whatever you want.
 

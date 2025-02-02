@@ -1,16 +1,13 @@
 {
   "name": "react-mqtt-hooks",
+  "type": "module",
   "version": "0.0.3",
   "description": "React Hooks for MQTT",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup",
-    "prepublishOnly": "pnpm build",
-    "format": "prettier --write .",
-    "lint": "eslint . --ext .ts,.tsx --fix"
+  "author": "Eric Huang",
+  "license": "MIT",
+  "homepage": "https://github.com/erich2s/react-mqtt-hooks",
+  "repository": {
+    "url": "https://github.com/erich2s/react-mqtt-hooks"
   },
   "keywords": [
     "mqtt",
@@ -20,28 +17,33 @@
     "esp",
     "stm32"
   ],
-  "repository": {
-    "url": "https://github.com/erich2s/react-mqtt-hooks"
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "prepublishOnly": "pnpm build",
+    "format": "prettier --write .",
+    "lint": "eslint . --fix"
   },
-  "homepage": "https://github.com/erich2s/react-mqtt-hooks",
-  "author": "Eric Huang",
-  "license": "MIT",
   "dependencies": {
-    "mqtt": "^5.4.0",
-    "react": "^18.2.0"
+    "mqtt": "^5.10.3",
+    "react": "^18.3.1"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
+    "@antfu/eslint-config": "^3.12.0",
+    "@changesets/cli": "^2.27.12",
+    "@eslint-react/eslint-plugin": "^1.26.0",
     "@swc/core": "^1.4.8",
-    "@types/node": "^20.11.27",
-    "@types/react": "^18.2.65",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
-    "eslint": "^8.56.0",
+    "@types/node": "^20.15.1",
+    "@types/react": "^18.3.1",
+    "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "prettier": "^3.2.5",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.2"
+    "eslint-plugin-format": "^1.0.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3"
   }
 }

@@ -1,6 +1,8 @@
 "use client";
-import { MqttConnector } from "./core/mqtt-connector";
-import { useTopic } from "./hooks/use-topic";
-import { useMqttConnector } from "./hooks/use-mqtt-connector";
+import { MqttConnector } from "./contexts/mqtt-connector";
+import { MqttContext } from "./contexts/mqtt-context";
+import useMqttClient from "./hooks/use-mqtt-client";
+import useTopic from "./hooks/use-topic";
+import useTopics from "./hooks/use-topics";
 
-export { MqttConnector, useTopic, useMqttConnector };
+export { MqttConnector, MqttContext, useMqttClient, useTopic, useTopics };

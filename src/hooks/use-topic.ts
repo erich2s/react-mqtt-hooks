@@ -1,51 +1,53 @@
-import { useSyncExternalStore } from "react";
-import { globalState } from "../core/global-state";
-import { type MqttClient } from "mqtt";
-import { useMqttConnector } from "./use-mqtt-connector";
+"use client";
+import type { Buffer } from "node:buffer";
+import { useEffect, useState } from "react";
+import { MqttCache } from "../internals/mqtt-cache";
+import { parseMessage } from "../internals/utils";
+import useMqttClient from "./use-mqtt-client";
 
-export function useTopic(topic: string) {
-  const ctx = useMqttConnector();
-  if (!ctx) {
-    throw new Error("useTopic must be used within a MqttConnector");
-  }
-  const { client } = ctx;
-  const message = useSyncExternalStore<Buffer | null>(
-    (cb) => subscribeToTopic(client, topic, cb),
-    () => getSanpshotForTopic(topic),
-    () => getServerSnapshotForTopic(topic),
-  );
-  return message;
-}
+export default function useTopic<T = any>(topic: string | null) {
+  const mqttClient = useMqttClient();
+  const cache = MqttCache.getInstance();
+  const [data, setData] = useState<T | undefined>(() => {
+    // get data from cache
+    return topic ? MqttCache.getInstance().getData<T>(topic) : undefined;
+  });
 
-function subscribeToTopic(
-  client: MqttClient | null | undefined,
-  topic: string,
-  callback: () => void,
-) {
-  if (!client) {
-    // Mqtt client not ready yet
-    return () => {};
-  }
-  const topicItem = globalState.get(topic);
-  if (topicItem) {
-    topicItem.callbacks.push(callback);
-  } else {
-    globalState.set(topic, { cache: null, callbacks: [callback] });
-    client.subscribe(topic);
-  }
-  return () => {
-    const topicItem = globalState.get(topic);
-    if (topicItem) {
-      topicItem.callbacks = topicItem.callbacks.filter((cb) => cb !== callback);
-      // TODO: unsubscribe if no more callbacks, and delete the topic from globalState
+  useEffect(() => {
+    // skip sub if topic is null
+    if (!topic)
+      return;
+
+    // only subscribe to the topic if there are no other subscribers
+    const subscribersCount = cache.subscribe(topic);
+    if (subscribersCount === 1) {
+      mqttClient.subscribe(topic);
     }
-  };
-}
-function getSanpshotForTopic(topic: string) {
-  const topicItem = globalState.get(topic);
-  return topicItem ? topicItem.cache : null;
-}
-function getServerSnapshotForTopic(_topic: string) {
-  // TODO: implement this
-  return null;
+
+    // when multiple components subscribe to the same topic, return the data from the cache
+    const cachedData = cache.getData<T>(topic);
+    if (cachedData) {
+      setData(cachedData);
+    }
+
+    function handleMessage(receivedTopic: string, message: Buffer) {
+      if (receivedTopic !== topic)
+        return;
+
+      const parsedMsg = parseMessage<T>(message);
+      cache.setData(topic, parsedMsg);
+      setData(parsedMsg);
+    }
+
+    mqttClient.on("message", handleMessage);
+
+    return () => {
+      mqttClient.off("message", handleMessage);
+      if (cache.unsubscribe(topic)) {
+        mqttClient.unsubscribe(topic);
+      }
+    };
+  }, [cache, mqttClient, topic]);
+
+  return data;
 }

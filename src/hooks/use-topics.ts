@@ -23,6 +23,9 @@ export default function useTopics(topics: string[]) {
   });
 
   useEffect(() => {
+    if (!mqttClient)
+      return;
+
     // skip subscribing when there is no topic
     if (normalizedTopics.length === 0)
       return;

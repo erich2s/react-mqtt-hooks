@@ -15,7 +15,7 @@ export default function createConfig(options, ...userConfigs) {
     ],
     ...options,
   }, {
-    files: ["tsconfig.json"],
+    files: ["tsconfig.json", "tsconfig.node.json", "tsconfig.app.json"],
     rules: {
       "jsonc/sort-keys": "off",
     },

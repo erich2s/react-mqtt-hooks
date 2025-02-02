@@ -14,6 +14,9 @@ export default function useTopic<T = any>(topic: string | null) {
   });
 
   useEffect(() => {
+    if (!mqttClient)
+      return;
+
     // skip sub if topic is null
     if (!topic)
       return;

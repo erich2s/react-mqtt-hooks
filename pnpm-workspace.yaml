@@ -1,0 +1,4 @@
+# eslint-disable yaml/plain-scalar
+packages:
+  - "."
+  - "react-example"

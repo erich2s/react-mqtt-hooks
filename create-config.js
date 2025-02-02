@@ -10,6 +10,9 @@ export default function createConfig(options, ...userConfigs) {
       semi: true,
       quotes: "double",
     },
+    ignores: [
+      "README.md",
+    ],
     ...options,
   }, {
     files: ["tsconfig.json"],

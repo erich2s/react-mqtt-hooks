@@ -10,12 +10,8 @@ export default function createConfig(options, ...userConfigs) {
       semi: true,
       quotes: "double",
     },
+    ignores: ["**/components/ui/*", "**/tsconfig.json", "**/tsconfig.node.json", "**/tsconfig.app.json", "README.md"],
     ...options,
-  }, {
-    files: ["tsconfig.json", "tsconfig.node.json", "tsconfig.app.json"],
-    rules: {
-      "jsonc/sort-keys": "off",
-    },
   }, {
     rules: {
       "no-console": "off",

@@ -22,6 +22,8 @@ export function MqttConnector({ children, url, options }: MqttConnectorProps) {
     };
   }, [url, options]);
   return (
+    // disable this rule to make it compatible with React 18
+    // eslint-disable-next-line react/no-context-provider
     <MqttContext.Provider value={mqttClient}>
       {children}
     </MqttContext.Provider>

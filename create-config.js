@@ -10,9 +10,6 @@ export default function createConfig(options, ...userConfigs) {
       semi: true,
       quotes: "double",
     },
-    ignores: [
-      "README.md",
-    ],
     ...options,
   }, {
     files: ["tsconfig.json", "tsconfig.node.json", "tsconfig.app.json"],
@@ -31,6 +28,13 @@ export default function createConfig(options, ...userConfigs) {
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "ts/consistent-type-definitions": "off",
+    },
+  }, {
+    files: ["README.md"],
+    rules: {
+      "unused-imports/no-unused-vars": "off",
+      "ts/no-unused-vars": "off",
+      "react-refresh/only-export-components": "off",
     },
   }, ...userConfigs);
 }

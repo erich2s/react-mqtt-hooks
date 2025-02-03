@@ -20,6 +20,8 @@ With these hooks, you can publish messages to specific topics and subscribe to r
 npm i react-mqtt-hooks
 # or
 pnpm add react-mqtt-hooks
+# or
+bun add react-mqtt-hooks
 ```
 
 ## 🚀 Quick Start
@@ -38,7 +40,7 @@ pnpm add react-mqtt-hooks
            username: "your-username",
          }}
        >
-         {/* Your components */}
+         {/* Your components here */}
        </MqttConnector>
      );
    }
@@ -50,15 +52,13 @@ pnpm add react-mqtt-hooks
    import { useTopic } from "react-mqtt-hooks";
 
    function ChatMsg() {
-     // This hook return a Buffer object from Broker,
-     // you can use toString() to convert it to a string
-     // or whatever you want.
      const msg = useTopic("chat");
-
      return (
        <div>
          <h1>Messages from the broker:</h1>
-         <p>{msg?.toString()}</p>
+         <pre>
+           {JSON.stringify(msg, null, 2)}
+         </pre>
        </div>
      );
    }
@@ -66,13 +66,15 @@ pnpm add react-mqtt-hooks
 
    `useTopic` will cache the last message data received from the broker and update the component state under the hood. This concept is inspired by the [SWR](https://swr.vercel.app/) library.
 
-   Multiple `useTopic` hook **with same topic** will share the same message data cache. This means you can call `useTopic` accross different components and they all will behave the same.
+   Multiple `useTopic` hook **with same topic** will share the same message data cache. This means you can call `useTopic` accross different components and they will retrieve the same message data from cache if it exists.
 
 ## 📚 API Refference
 
 ### `MqttConnector`
 
-The `MqttConnector` component is a provider that wraps your application and provides the [MQTT.js](https://github.com/mqttjs/MQTT.js) client instance and connection status to the context. It also handles the connection and disconnection of the client.
+The `MqttConnector` component is a provider that wraps your application and provides the raw `MqttClient` instance from [MQTT.js](https://github.com/mqttjs/MQTT.js) to the context. It also handles the connection and disconnection of the client.
+
+All hooks provided by this library must be used within the `MqttConnector` component.
 
 ```tsx
 import { MqttConnector } from "react-mqtt-hooks";
@@ -91,29 +93,50 @@ function App() {
 }
 ```
 
-### `useMqttConnector`
+### `useMqttClient`
 
-The `useMqttConnector` hook is used to access `MqttConnector` component context. It provides 2 values:
-
-- `client`: The MQTT.js client instance, more details about the client instance can be found in the [MQTT.js documentation](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#mqttclientpublishtopic-message-options-callback).
-- `status`: The connection status of the client.
+The `useMqttClient` hook is used to access the raw `MqttClient` instance from [MQTT.js](https://github.com/mqttjs/MQTT.js).
 
 ```tsx
-import { useMqttConnector } from "react-mqtt-hooks";
+import { useEffect, useState } from "react";
+import { useMqttClient } from "react-mqtt-hooks";
 
-function MyComponent() {
-  const { client, status } = useMqttConnector();
+function ConnectionStatus() {
+  const client = useMqttClient();
+  const [status, setStatus] = useState("connecting");
+
+  useEffect(() => {
+    if (!client)
+      return;
+    function onConnect() {
+      setStatus("connected");
+    }
+    function onReconnect() {
+      setStatus("reconnecting");
+    }
+    function onDisconnect() {
+      setStatus("disconnected");
+    }
+    function onClose() {
+      setStatus("closed");
+    }
+    client.on("connect", onConnect);
+    client.on("reconnect", onReconnect);
+    client.on("disconnect", onDisconnect);
+    client.on("close", onClose);
+
+    return () => {
+      client.off("connect", onConnect);
+      client.off("reconnect", onReconnect);
+      client.off("disconnect", onDisconnect);
+      client.off("close", onClose);
+    };
+  }, [client]);
 
   return (
     <div>
-      <p>
-        Client ID:
-        {client?.options.clientId}
-      </p>
-      <p>
-        Status:
-        {status}
-      </p>
+      Connection status:
+      {status}
     </div>
   );
 }
@@ -122,16 +145,40 @@ function MyComponent() {
 ### `useTopic`
 
 > [!WARNING]
-> This hook currently not support multiple topics and wildcard subscriptions yet.
+> This hook currently not support wildcard subscriptions yet.
 
-The `useTopic` hook is used to subscribe to a specific topic and receive messages from the broker. It returns the last message **buffer** received from the broker. You can convert it to whatever you want.
+The `useTopic` hook is used to subscribe to a specific topic and receive messages from the broker. It returns the last message received from the broker.
 
 ```tsx
 import { useTopic } from "react-mqtt-hooks";
 
-function MyComponent() {
-  const msg = useTopic("my-topic");
+function SingleTopic() {
+  const msg = useTopic("chat");
 
-  return <p>{msg?.toString()}</p>;
+  return (
+    <pre>
+      {JSON.stringify(msg, null, 2)}
+    </pre>
+  );
+}
+```
+
+### `useTopics`
+
+The `useTopics` hook is used to subscribe to multiple topics and receive messages from the broker. It merge all data from every topics into a single object.
+
+```tsx
+import { useTopics } from "react-mqtt-hooks";
+
+function MultiTopics() {
+  // Must wrap the topics array with useMemo to prevent re-rendering
+  const topicsArr = useMemo(() => ["chat/1", "chat/2"], []);
+  const msg = useTopics(topicsArr);
+
+  return (
+    <pre>
+      {JSON.stringify(msg, null, 2)}
+    </pre>
+  );
 }
 ```

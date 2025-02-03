@@ -4,7 +4,6 @@
     "module": "ESNext",
     "lib": ["dom", "es2017"],
     "declaration": true,
-    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

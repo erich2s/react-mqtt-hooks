@@ -1,7 +1,7 @@
 {
   "name": "react-mqtt-hooks",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "packageManager": "pnpm@9.14.4",
   "description": "React Hooks for MQTT",
   "author": "Eric Huang",

@@ -10,6 +10,9 @@
   "repository": {
     "url": "https://github.com/erich2s/react-mqtt-hooks"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "mqtt",
     "react",

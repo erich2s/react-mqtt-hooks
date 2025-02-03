@@ -1,5 +1,5 @@
 {
-  "name": "react-example",
+  "name": "example",
   "type": "module",
   "version": "0.0.0",
   "private": true,
@@ -15,16 +15,16 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.474.0",
     "nanoid": "^5.0.9",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-mqtt-hooks": "workspace:*",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^20.15.1",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
     "globals": "^15.14.0",

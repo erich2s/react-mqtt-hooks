@@ -25,13 +25,13 @@
   ],
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup",
-    "prepublishOnly": "pnpm build",
-    "lint": "eslint . --fix"
+    "build": "tsc && tsup",
+    "lint": "eslint . --fix",
+    "prepublishOnly": "pnpm build"
   },
-  "dependencies": {
+  "peerDependencies": {
     "mqtt": "^5.10.3",
-    "react": "^18.3.1"
+    "react": ">=18.3.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.1.1",

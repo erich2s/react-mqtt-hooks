@@ -24,6 +24,17 @@ function App() {
                 <span className="font-bold">{MQTT_URL}</span>
               </Badge>
             </div>
+            <p className="">
+              You can now publish message to topic
+              {" "}
+              <span className="px-1.5 py-0.5 bg-zinc-200 rounded-lg font-mono font-medium">chat/1</span>
+              {" "}
+              or
+              {" "}
+              <span className="px-1.5 py-0.5 bg-zinc-200 rounded-lg font-mono font-medium">chat/2</span>
+              {" "}
+              and see the messages in the cards below.
+            </p>
           </div>
           <div>
             <Button variant="ghost" size="icon" asChild className="size-8">

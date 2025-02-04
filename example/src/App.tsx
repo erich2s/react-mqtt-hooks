@@ -5,14 +5,13 @@ import MultiTopicsCard from "./components/multi-topics-card";
 import SingleTopicCard from "./components/single-topic-card";
 import { Button } from "./components/ui/button";
 
-const MQTT_URL = "ws://broker.emqx.io:8083/mqtt";
-const MQTT_USERNAME = "react-mqtt-hooks";
 function App() {
+  const MQTT_URL = import.meta.env.VITE_MQTT_URL;
   return (
     <MqttConnector
       url={MQTT_URL}
       options={{
-        username: MQTT_USERNAME,
+        username: "react-mqtt-hooks",
       }}
     >
       <div className="p-6 mx-auto space-y-6 container">

@@ -19,11 +19,7 @@ With these hooks, you can publish messages to specific topics and subscribe to r
 ## 📦 Installation
 
 ```bash
-npm i react-mqtt-hooks
-# or
-pnpm add react-mqtt-hooks
-# or
-bun add react-mqtt-hooks
+pnpm add react-mqtt-hooks mqtt
 ```
 
 ## 🚀 Quick Start

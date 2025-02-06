@@ -21,6 +21,12 @@ export default function useTopic<T = any>(topic: string | null) {
       mqttClient.subscribe(topic);
     }
 
+    // when multiple components subscribe to the same topic, return the data from the cache
+    const cachedData = cache.getData<T>(topic);
+    if (cachedData) {
+      setData(cachedData);
+    }
+
     const handleDataUpdate = (newData: T) => {
       setData(newData);
     };

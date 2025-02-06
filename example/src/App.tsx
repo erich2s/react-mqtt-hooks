@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { MqttConnector } from "react-mqtt-hooks";
 import ConnectionStatus from "./components/connection-status";
+import Demo from "./components/demo";
 import MultiTopicsCard from "./components/multi-topics-card";
 import SingleTopicCard from "./components/single-topic-card";
 import { Button } from "./components/ui/button";
@@ -24,7 +25,7 @@ function App() {
                 <span className="font-bold">{MQTT_URL}</span>
               </Badge>
             </div>
-            <p className="">
+            <p>
               You can now publish message to topic
               {" "}
               <span className="px-1.5 py-0.5 bg-zinc-200 rounded-lg font-mono font-medium">chat/1</span>
@@ -62,6 +63,7 @@ function App() {
           <MultiTopicsCard />
         </main>
 
+        <Demo />
       </div>
     </MqttConnector>
   );

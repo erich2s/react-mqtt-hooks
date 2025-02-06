@@ -1,5 +1,11 @@
 # react-mqtt-hooks
 
+## 0.2.1
+
+### Patch Changes
+
+- 667596a: fix caching
+
 ## 0.2.0
 
 ### Minor Changes

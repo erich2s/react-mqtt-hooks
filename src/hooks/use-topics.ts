@@ -1,8 +1,6 @@
 "use client";
-import type { Buffer } from "node:buffer";
 import { useEffect, useMemo, useState } from "react";
 import { MqttCache } from "../internals/mqtt-cache";
-import { parseMessage } from "../internals/utils";
 import useMqttClient from "./use-mqtt-client";
 
 export default function useTopics(topics: string[]) {
@@ -12,7 +10,7 @@ export default function useTopics(topics: string[]) {
   const normalizedTopics = useMemo(() => [...new Set(topics)].sort(), [topics]);
 
   // get data from cache when initializing
-  const [dataMap, setDataMap] = useState(() => {
+  const [dataMap, setDataMap] = useState<Record<string, any>>(() => {
     return normalizedTopics.reduce((acc, topic) => {
       const cachedData = cache.getData(topic);
       if (cachedData !== undefined) {
@@ -23,44 +21,29 @@ export default function useTopics(topics: string[]) {
   });
 
   useEffect(() => {
-    if (!mqttClient)
-      return;
-
-    // skip subscribing when there is no topic
-    if (normalizedTopics.length === 0)
+    if (!mqttClient || normalizedTopics.length === 0)
       return;
 
     normalizedTopics.forEach((topic) => {
-      const cachedData = cache.getData(topic);
-      // update dataMap if there is cached data
-      if (cachedData) {
-        setDataMap(prev => ({ ...prev, [topic]: cachedData }));
-      }
-      // subscribe to topic when there is no subscriber in cache
-      else {
-        const subscribersCount = cache.subscribe(topic);
-        if (subscribersCount === 1) {
-          mqttClient.subscribe(topic);
-        }
+      const subscribersCount = cache.subscribe(topic);
+      if (subscribersCount === 1) {
+        mqttClient.subscribe(topic);
       }
     });
 
-    // handle incoming messages
-    function handleMessage(receivedTopic: string, message: Buffer) {
-      if (!normalizedTopics.includes(receivedTopic))
-        return;
+    const handleDataUpdate = (updatedTopic: string, newData: any) => {
+      if (normalizedTopics.includes(updatedTopic)) {
+        setDataMap(prev => ({ ...prev, [updatedTopic]: newData }));
+      }
+    };
 
-      const parsedMsg = parseMessage(message);
-      cache.setData(receivedTopic, parsedMsg);
-      setDataMap(prev => ({ ...prev, [receivedTopic]: parsedMsg }));
-    }
-    mqttClient.on("message", handleMessage);
+    normalizedTopics.forEach((topic) => {
+      cache.addObserver(topic, (data: any) => handleDataUpdate(topic, data));
+    });
 
     return () => {
-      mqttClient.off("message", handleMessage);
-
-      // unsubscribe when there is no subscriber in cache
       normalizedTopics.forEach((topic) => {
+        cache.removeObserver(topic, handleDataUpdate);
         if (cache.unsubscribe(topic)) {
           mqttClient.unsubscribe(topic);
         }

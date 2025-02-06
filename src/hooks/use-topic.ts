@@ -1,8 +1,6 @@
 "use client";
-import type { Buffer } from "node:buffer";
 import { useEffect, useState } from "react";
 import { MqttCache } from "../internals/mqtt-cache";
-import { parseMessage } from "../internals/utils";
 import useMqttClient from "./use-mqtt-client";
 
 export default function useTopic<T = any>(topic: string | null) {
@@ -10,15 +8,11 @@ export default function useTopic<T = any>(topic: string | null) {
   const cache = MqttCache.getInstance();
   const [data, setData] = useState<T | undefined>(() => {
     // get data from cache
-    return topic ? MqttCache.getInstance().getData<T>(topic) : undefined;
+    return topic ? cache.getData<T>(topic) : undefined;
   });
 
   useEffect(() => {
-    if (!mqttClient)
-      return;
-
-    // skip sub if topic is null
-    if (!topic)
+    if (!mqttClient || !topic)
       return;
 
     // only subscribe to the topic if there are no other subscribers
@@ -27,30 +21,19 @@ export default function useTopic<T = any>(topic: string | null) {
       mqttClient.subscribe(topic);
     }
 
-    // when multiple components subscribe to the same topic, return the data from the cache
-    const cachedData = cache.getData<T>(topic);
-    if (cachedData) {
-      setData(cachedData);
-    }
+    const handleDataUpdate = (newData: T) => {
+      setData(newData);
+    };
 
-    function handleMessage(receivedTopic: string, message: Buffer) {
-      if (receivedTopic !== topic)
-        return;
-
-      const parsedMsg = parseMessage<T>(message);
-      cache.setData(topic, parsedMsg);
-      setData(parsedMsg);
-    }
-
-    mqttClient.on("message", handleMessage);
+    cache.addObserver(topic, handleDataUpdate);
 
     return () => {
-      mqttClient.off("message", handleMessage);
+      cache.removeObserver(topic, handleDataUpdate);
       if (cache.unsubscribe(topic)) {
         mqttClient.unsubscribe(topic);
       }
     };
-  }, [cache, mqttClient, topic]);
+  }, [mqttClient, topic, cache]);
 
   return data;
 }

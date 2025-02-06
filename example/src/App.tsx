@@ -61,6 +61,7 @@ function App() {
           <SingleTopicCard topic="chat/2" />
           <MultiTopicsCard />
         </main>
+
       </div>
     </MqttConnector>
   );

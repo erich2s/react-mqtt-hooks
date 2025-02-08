@@ -1,5 +1,11 @@
 # react-mqtt-hooks
 
+## 0.3.0
+
+### Minor Changes
+
+- e31eb49: feat: add custom parser for incoming mqtt message
+
 ## 0.2.1
 
 ### Patch Changes

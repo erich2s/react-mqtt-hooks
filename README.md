@@ -70,7 +70,7 @@ pnpm add react-mqtt-hooks mqtt
 
 ### `MqttConnector`
 
-The `MqttConnector` component is a provider that wraps your application and provides the raw `MqttClient` instance from [MQTT.js](https://github.com/mqttjs/MQTT.js) to the context. It also handles the connection and disconnection of the client.
+The `MqttConnector` component is a provider that wraps your application and provides the raw `MqttClient` instance from [MQTT.js](https://github.com/mqttjs/MQTT.js?tab=readme-ov-file#client) to the context. It also handles the connection and disconnection of the client.
 
 All hooks provided by this library must be used within the `MqttConnector` component.
 

@@ -11,9 +11,10 @@ export type CacheItem<T> = {
 // Global cache for MQTT messages
 export class MqttCache {
   private static instance: MqttCache;
-  cache = new Map<string, CacheItem<any>>();
-  private mqttClient: MqttClient | null = null;
+  private cache = new Map<string, CacheItem<any>>();
   private observers: Map<string, Set<Function>> = new Map();
+  private mqttClient: MqttClient | null = null;
+  private customParser: ((message: Buffer) => any) | undefined = undefined;
 
   static getInstance(): MqttCache {
     if (!MqttCache.instance) {
@@ -29,12 +30,16 @@ export class MqttCache {
     }
   }
 
+  setCustomParser(parser: ((message: Buffer) => any) | undefined) {
+    this.customParser = parser;
+  }
+
   private setupMessageListener() {
     if (!this.mqttClient) {
       return;
     }
     this.mqttClient.on("message", (topic: string, message: Buffer) => {
-      const parsedMsg = parseMessage(message);
+      const parsedMsg = this.customParser ? this.customParser(message) : parseMessage(message);
       this.setData(topic, parsedMsg);
       this.notifyObservers(topic, parsedMsg);
     });

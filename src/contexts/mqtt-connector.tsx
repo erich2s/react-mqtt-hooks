@@ -1,5 +1,6 @@
 "use client";
 import type { IClientOptions } from "mqtt";
+import type { Buffer } from "node:buffer";
 import type { MqttClientType } from "./mqtt-context";
 import mqtt from "mqtt";
 import { useEffect, useState } from "react";
@@ -10,9 +11,10 @@ type MqttConnectorProps = {
   children: React.ReactNode;
   url: string;
   options?: IClientOptions;
+  customParser?: (message: Buffer) => any;
 };
 
-export function MqttConnector({ children, url, options }: MqttConnectorProps) {
+export function MqttConnector({ children, url, options, customParser }: MqttConnectorProps) {
   const [mqttClient, setMqttClient] = useState<MqttClientType>(null);
   const cache = MqttCache.getInstance();
   useEffect(() => {
@@ -20,13 +22,14 @@ export function MqttConnector({ children, url, options }: MqttConnectorProps) {
     setMqttClient(client);
     client.on("connect", () => {
       cache.setClient(client);
+      cache.setCustomParser(customParser);
     });
 
     return () => {
       cache.setClient(null);
       client.end();
     };
-  }, [url, options, cache]);
+  }, [url, options, cache, customParser]);
   return (
     // disable this rule to make it compatible with React 18
     // eslint-disable-next-line react/no-context-provider

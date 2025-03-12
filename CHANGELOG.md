@@ -1,5 +1,11 @@
 # react-mqtt-hooks
 
+## 0.3.1
+
+### Patch Changes
+
+- a2a2ac9: feat: exposed internal cache for dev purpose
+
 ## 0.3.0
 
 ### Minor Changes

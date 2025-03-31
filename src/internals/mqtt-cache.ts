@@ -5,8 +5,8 @@ import { parseMessage } from "./utils";
 
 export type CacheItem<T> = {
   data: T;
-  subscribers: Map<string, Function>;
-  lastUpdated: number;
+  subscribers: Map<string, Function>; // subscriberId: callback
+  lastUpdated: string | null;
 };
 
 // Global cache for MQTT messages
@@ -80,33 +80,32 @@ export class MqttCache {
     return this.cache.get(topic)?.data as T | undefined;
   }
 
-  setData<T>(topic: string, data: T) {
+  private setData<T>(topic: string, data: T) {
     const item = this.cache.get(topic);
     if (item) {
       item.data = data;
-      item.lastUpdated = Date.now();
+      item.lastUpdated = new Date().toLocaleString();
     }
     else {
       this.cache.set(topic, {
         data,
         subscribers: new Map(),
-        lastUpdated: Date.now(),
+        lastUpdated: new Date().toLocaleString(),
       });
     }
   }
 
-  // Combined subscribe and addObserver
-  subscribe(topic: string, callback: Function, observerId: string): number {
+  subscribe(topic: string, callback: Function, subscriberId: string): number {
     if (!this.cache.has(topic)) {
       this.cache.set(topic, {
         data: undefined,
         subscribers: new Map(),
-        lastUpdated: 0,
+        lastUpdated: null,
       });
     }
 
     const item = this.cache.get(topic)!;
-    item.subscribers.set(observerId, callback);
+    item.subscribers.set(subscriberId, callback);
 
     // If this is the first subscriber, subscribe to MQTT topic
     if (item.subscribers.size === 1) {
@@ -119,13 +118,12 @@ export class MqttCache {
     return item.subscribers.size;
   }
 
-  // Combined unsubscribe and removeObserver
-  unsubscribe(topic: string, observerId: string): boolean {
+  unsubscribe(topic: string, subscriberId: string): boolean {
     const item = this.cache.get(topic);
     if (!item)
       return false;
 
-    item.subscribers.delete(observerId);
+    item.subscribers.delete(subscriberId);
 
     // If no subscribers left, unsubscribe from MQTT topic
     if (item.subscribers.size === 0) {
@@ -138,18 +136,5 @@ export class MqttCache {
     }
 
     return false;
-  }
-
-  // Debug helper
-  getSubscriptionStatus() {
-    return {
-      cacheSize: this.cache.size,
-      activeSubscriptions: Array.from(this.activeSubscriptions),
-      topics: Array.from(this.cache.entries()).map(([topic, item]) => ({
-        topic,
-        subscribers: item.subscribers.size,
-        hasData: item.data !== undefined,
-      })),
-    };
   }
 }

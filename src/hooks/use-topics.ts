@@ -6,7 +6,7 @@ import useMqttClient from "./use-mqtt-client";
 export default function useTopics(topics: string[]) {
   const mqttClient = useMqttClient();
   const cache = MqttCache.getInstance();
-  const baseObserverId = useId(); // Base unique ID for this component instance
+  const baseSubscriberId = useId(); // Base unique ID for this component instance
 
   const normalizedTopics = useMemo(() => [...new Set(topics)].sort(), [topics]);
 
@@ -40,7 +40,7 @@ export default function useTopics(topics: string[]) {
 
     // Subscribe to all topics
     normalizedTopics.forEach((topic) => {
-      const observerId = `${baseObserverId}-${topic}`;
+      const observerId = `${baseSubscriberId}-${topic}`;
       const handleDataUpdate = (newData: any) => {
         setDataMap(prev => ({ ...prev, [topic]: newData }));
       };
@@ -52,10 +52,10 @@ export default function useTopics(topics: string[]) {
     return () => {
       normalizedTopics.forEach((topic) => {
         // Combined unsubscribe and removeObserver
-        cache.unsubscribe(topic, `${baseObserverId}-${topic}`);
+        cache.unsubscribe(topic, `${baseSubscriberId}-${topic}`);
       });
     };
-  }, [mqttClient, normalizedTopics, cache, baseObserverId]);
+  }, [mqttClient, normalizedTopics, cache, baseSubscriberId]);
 
   return dataMap;
 }

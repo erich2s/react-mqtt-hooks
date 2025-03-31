@@ -6,7 +6,7 @@ import useMqttClient from "./use-mqtt-client";
 export default function useTopic<T = any>(topic: string | null) {
   const mqttClient = useMqttClient();
   const cache = MqttCache.getInstance();
-  const observerId = useId(); // Unique ID for this component instance
+  const subscriberId = useId(); // Unique ID for this component instance
 
   const [data, setData] = useState<T | undefined>(() => {
     // get data from cache
@@ -22,7 +22,7 @@ export default function useTopic<T = any>(topic: string | null) {
     };
 
     // Combined subscribe and addObserver
-    cache.subscribe(topic, handleDataUpdate, observerId);
+    cache.subscribe(topic, handleDataUpdate, subscriberId);
 
     // Check again for initial data (might have been updated since state init)
     const cachedData = cache.getData<T>(topic);
@@ -32,9 +32,9 @@ export default function useTopic<T = any>(topic: string | null) {
 
     return () => {
       // Combined unsubscribe and removeObserver
-      cache.unsubscribe(topic, observerId);
+      cache.unsubscribe(topic, subscriberId);
     };
-  }, [mqttClient, topic, cache, observerId]);
+  }, [mqttClient, topic, cache, subscriberId]);
 
   return data;
 }

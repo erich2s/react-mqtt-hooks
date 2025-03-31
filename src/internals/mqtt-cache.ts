@@ -5,16 +5,17 @@ import { parseMessage } from "./utils";
 
 export type CacheItem<T> = {
   data: T;
-  subscribers: number;
+  subscribers: Map<string, Function>;
+  lastUpdated: number;
 };
 
 // Global cache for MQTT messages
 export class MqttCache {
   private static instance: MqttCache;
   private cache = new Map<string, CacheItem<any>>();
-  private observers: Map<string, Set<Function>> = new Map();
   private mqttClient: MqttClient | null = null;
   private customParser: ((message: Buffer) => any) | undefined = undefined;
+  private activeSubscriptions = new Set<string>();
 
   static getInstance(): MqttCache {
     if (!MqttCache.instance) {
@@ -24,9 +25,23 @@ export class MqttCache {
   }
 
   setClient(client: MqttClient | null) {
+    const previousClient = this.mqttClient;
     this.mqttClient = client;
+
+    // Clean up previous client
+    if (previousClient) {
+      previousClient.removeAllListeners("message");
+    }
+
     if (client) {
       this.setupMessageListener();
+
+      // Resubscribe to all active topics when client changes or reconnects
+      this.resubscribeToActiveTopics();
+
+      client.on("connect", () => {
+        this.resubscribeToActiveTopics();
+      });
     }
   }
 
@@ -41,31 +56,23 @@ export class MqttCache {
     this.mqttClient.on("message", (topic: string, message: Buffer) => {
       const parsedMsg = this.customParser ? this.customParser(message) : parseMessage(message);
       this.setData(topic, parsedMsg);
-      this.notifyObservers(topic, parsedMsg);
+      this.notifySubscribers(topic, parsedMsg);
     });
   }
 
-  private notifyObservers(topic: string, data: any) {
-    const observers = this.observers.get(topic);
-    if (observers) {
-      observers.forEach(callback => callback(data));
-    }
+  private resubscribeToActiveTopics() {
+    if (!this.mqttClient || !this.mqttClient.connected)
+      return;
+
+    this.activeSubscriptions.forEach((topic) => {
+      this.mqttClient?.subscribe(topic);
+    });
   }
 
-  addObserver(topic: string, callback: Function) {
-    if (!this.observers.has(topic)) {
-      this.observers.set(topic, new Set());
-    }
-    this.observers.get(topic)?.add(callback);
-  }
-
-  removeObserver(topic: string, callback: Function) {
-    const observers = this.observers.get(topic);
-    if (observers) {
-      observers.delete(callback);
-      if (observers.size === 0) {
-        this.observers.delete(topic);
-      }
+  private notifySubscribers(topic: string, data: any) {
+    const cacheItem = this.cache.get(topic);
+    if (cacheItem && cacheItem.subscribers.size > 0) {
+      cacheItem.subscribers.forEach(callback => callback(data));
     }
   }
 
@@ -77,38 +84,72 @@ export class MqttCache {
     const item = this.cache.get(topic);
     if (item) {
       item.data = data;
+      item.lastUpdated = Date.now();
     }
     else {
       this.cache.set(topic, {
         data,
-        subscribers: 1,
+        subscribers: new Map(),
+        lastUpdated: Date.now(),
       });
     }
   }
 
-  subscribe(topic: string) {
-    const item = this.cache.get(topic);
-    if (item) {
-      return ++item.subscribers;
-    }
-    else {
+  // Combined subscribe and addObserver
+  subscribe(topic: string, callback: Function, observerId: string): number {
+    if (!this.cache.has(topic)) {
       this.cache.set(topic, {
         data: undefined,
-        subscribers: 1,
+        subscribers: new Map(),
+        lastUpdated: 0,
       });
-      return 1;
     }
+
+    const item = this.cache.get(topic)!;
+    item.subscribers.set(observerId, callback);
+
+    // If this is the first subscriber, subscribe to MQTT topic
+    if (item.subscribers.size === 1) {
+      this.activeSubscriptions.add(topic);
+      if (this.mqttClient?.connected) {
+        this.mqttClient.subscribe(topic);
+      }
+    }
+
+    return item.subscribers.size;
   }
 
-  unsubscribe(topic: string): boolean {
+  // Combined unsubscribe and removeObserver
+  unsubscribe(topic: string, observerId: string): boolean {
     const item = this.cache.get(topic);
-    if (item) {
-      item.subscribers--;
-      if (item.subscribers <= 0) {
-        this.cache.delete(topic);
+    if (!item)
+      return false;
+
+    item.subscribers.delete(observerId);
+
+    // If no subscribers left, unsubscribe from MQTT topic
+    if (item.subscribers.size === 0) {
+      this.activeSubscriptions.delete(topic);
+
+      if (this.mqttClient?.connected) {
+        this.mqttClient.unsubscribe(topic);
         return true;
       }
     }
+
     return false;
+  }
+
+  // Debug helper
+  getSubscriptionStatus() {
+    return {
+      cacheSize: this.cache.size,
+      activeSubscriptions: Array.from(this.activeSubscriptions),
+      topics: Array.from(this.cache.entries()).map(([topic, item]) => ({
+        topic,
+        subscribers: item.subscribers.size,
+        hasData: item.data !== undefined,
+      })),
+    };
   }
 }

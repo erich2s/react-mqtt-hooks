@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { MqttCache } from "../internals/mqtt-cache";
 import useMqttClient from "./use-mqtt-client";
 
 export default function useTopics(topics: string[]) {
   const mqttClient = useMqttClient();
   const cache = MqttCache.getInstance();
+  const baseObserverId = useId(); // Base unique ID for this component instance
 
   const normalizedTopics = useMemo(() => [...new Set(topics)].sort(), [topics]);
 
@@ -21,35 +22,40 @@ export default function useTopics(topics: string[]) {
   });
 
   useEffect(() => {
-    if (!mqttClient || normalizedTopics.length === 0)
+    if (normalizedTopics.length === 0)
       return;
 
-    normalizedTopics.forEach((topic) => {
-      const subscribersCount = cache.subscribe(topic);
-      if (subscribersCount === 1) {
-        mqttClient.subscribe(topic);
+    // Initial data refresh
+    const initialData = normalizedTopics.reduce((acc, topic) => {
+      const cachedData = cache.getData(topic);
+      if (cachedData !== undefined) {
+        acc[topic] = cachedData;
       }
-    });
+      return acc;
+    }, {} as Record<string, any>);
 
-    const handleDataUpdate = (updatedTopic: string, newData: any) => {
-      if (normalizedTopics.includes(updatedTopic)) {
-        setDataMap(prev => ({ ...prev, [updatedTopic]: newData }));
-      }
-    };
+    if (Object.keys(initialData).length > 0) {
+      setDataMap(prev => ({ ...prev, ...initialData }));
+    }
 
+    // Subscribe to all topics
     normalizedTopics.forEach((topic) => {
-      cache.addObserver(topic, (data: any) => handleDataUpdate(topic, data));
+      const observerId = `${baseObserverId}-${topic}`;
+      const handleDataUpdate = (newData: any) => {
+        setDataMap(prev => ({ ...prev, [topic]: newData }));
+      };
+
+      // Combined subscribe and addObserver
+      cache.subscribe(topic, handleDataUpdate, observerId);
     });
 
     return () => {
       normalizedTopics.forEach((topic) => {
-        cache.removeObserver(topic, handleDataUpdate);
-        if (cache.unsubscribe(topic)) {
-          mqttClient.unsubscribe(topic);
-        }
+        // Combined unsubscribe and removeObserver
+        cache.unsubscribe(topic, `${baseObserverId}-${topic}`);
       });
     };
-  }, [mqttClient, normalizedTopics, cache]);
+  }, [mqttClient, normalizedTopics, cache, baseObserverId]);
 
   return dataMap;
 }

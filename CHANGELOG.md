@@ -1,5 +1,11 @@
 # react-mqtt-hooks
 
+## 0.4.0
+
+### Minor Changes
+
+- 71215a6: fix: can not resubscribe after remount
+
 ## 0.3.1
 
 ### Patch Changes
